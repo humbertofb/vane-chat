@@ -20,6 +20,10 @@
   </div>
 
   <div id="chat" style="display:none;">
+    <div id="chat-header">
+      <h1>Chat romántico</h1>
+      <button onclick="goBackToLogin()">Volver al inicio</button>
+    </div>
     <div id="messages"></div>
     <div id="input-area">
       <textarea id="messageInput" placeholder="Escribe algo bonito..."></textarea>
@@ -29,12 +33,12 @@
 
   <template id="reaction-template">
     <div class="reaction-picker">
-      <span onclick="addReaction(event, '❤️')">❤️</span>
-      <span onclick="addReaction(event, '😂')">😂</span>
-      <span onclick="addReaction(event, '😢')">😢</span>
-      <span onclick="addReaction(event, '😮')">😮</span>
-      <span onclick="addReaction(event, '👍')">👍</span>
-      <span onclick="addReaction(event, '👎')">👎</span>
+      <span onclick="toggleReaction(event, '❤️')">❤️</span>
+      <span onclick="toggleReaction(event, '😂')">😂</span>
+      <span onclick="toggleReaction(event, '😢')">😢</span>
+      <span onclick="toggleReaction(event, '😮')">😮</span>
+      <span onclick="toggleReaction(event, '👍')">👍</span>
+      <span onclick="toggleReaction(event, '👎')">👎</span>
     </div>
   </template>
 
