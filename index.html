@@ -12,16 +12,17 @@
   <div id="login">
     <h2>Ingresa tu nombre</h2>
     <input type="text" id="username" placeholder="Tu nombre...">
-    <p>Elige tu color:</p>
-    <label><input type="radio" name="color" value="azul" checked> Azul 💙</label>
-    <label><input type="radio" name="color" value="rosa"> Rosa 🌸</label>
+    <div class="color-picker">
+      <button class="color-option" onclick="setColor('blue')">Azul</button>
+      <button class="color-option" onclick="setColor('pink')">Rosa</button>
+    </div>
     <button onclick="startChat()">Entrar al chat</button>
   </div>
 
   <div id="chat" style="display:none;">
     <div id="messages"></div>
     <div id="input-area">
-      <input type="text" id="messageInput" placeholder="Escribe algo bonito...">
+      <textarea id="messageInput" placeholder="Escribe algo bonito..."></textarea>
       <button onclick="sendMessage()">Enviar</button>
     </div>
   </div>
