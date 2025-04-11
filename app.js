@@ -22,7 +22,7 @@ sendButton.addEventListener("click", async () => {
   const message = messageInput.value;
   if (message) {
     try {
-      await firebase.firestore().collection("messages").add({
+      await db.collection("messages").add({
         message,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       });
@@ -34,7 +34,7 @@ sendButton.addEventListener("click", async () => {
 });
 
 // Escuchar nuevos mensajes
-const q = firebase.firestore().collection("messages").orderBy("timestamp");
+const q = db.collection("messages").orderBy("timestamp");
 q.onSnapshot((snapshot) => {
   messagesContainer.innerHTML = "";
   snapshot.docs.forEach((doc) => {
