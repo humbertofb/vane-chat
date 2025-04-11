@@ -58,6 +58,14 @@ function sendMessage() {
   document.getElementById('messageInput').value = "";
 }
 
+// Función para formatear y mostrar las reacciones de los mensajes
+function formatReactions(reactions) {
+  if (!reactions) return ''; // Si no hay reacciones, no mostramos nada
+  return Object.entries(reactions) // Convierte el objeto de reacciones en un array de [emoji, cantidad]
+    .map(([emoji, count]) => `<span>${emoji} ${count}</span>`) // Mapea los emojis y su cantidad a HTML
+    .join(' '); // Une todo en una sola cadena separada por espacios
+}
+
 // Listen for messages
 function listenMessages() {
   db.collection("messages").orderBy("createdAt")
