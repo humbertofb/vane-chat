@@ -12,6 +12,7 @@ const db = firebase.firestore();
 
 let currentUser = "";
 let currentColor = "blue";  // Default color
+let reactionPickerVisible = false;
 
 // Initialize user data from localStorage
 window.onload = () => {
@@ -72,7 +73,7 @@ function listenMessages() {
           <strong>${msg.user}:</strong> <span contenteditable="false">${msg.text}</span>
           <div class="reactions">${formatReactions(msg.reactions)}</div>
           <div class="actions">
-            <button onclick="showReactionPicker(this, '${doc.id}')">😊</button>
+            <button onclick="toggleReactionPicker(this, '${doc.id}')">😊</button>
             ${msg.user === currentUser ? `<button onclick="editMessage('${doc.id}', this)">✏️</button>
             <button onclick="deleteMessage('${doc.id}')">🗑️</button>` : ''}
           </div>
@@ -85,41 +86,35 @@ function listenMessages() {
     });
 }
 
-// Show reaction picker
-let reactionPickerVisible = false;
-
-function showReactionPicker(button, id) {
-  if (reactionPickerVisible) return;
-  reactionPickerVisible = true;
-  let picker = document.getElementById("reaction-template").content.cloneNode(true);
-  picker.querySelectorAll('span').forEach(span => {
-    span.onclick = (e) => addReaction(e, span.textContent, id);
-  });
-  button.parentElement.appendChild(picker);
+// Toggle reaction picker visibility
+function toggleReactionPicker(button, id) {
+  const picker = button.parentElement.querySelector(".reaction-picker");
+  if (picker) {
+    picker.remove();
+  } else {
+    let picker = document.getElementById("reaction-template").content.cloneNode(true);
+    picker.querySelectorAll('span').forEach(span => {
+      span.onclick = (e) => toggleReaction(e, span.textContent, id);
+    });
+    button.parentElement.appendChild(picker);
+  }
 }
 
-// Add reaction to message
-function addReaction(event, emoji, id) {
-  event.stopPropagation();
+// Add or remove reaction from message
+function toggleReaction(event, emoji, id) {
   const ref = db.collection("messages").doc(id);
   ref.get().then(doc => {
     const data = doc.data();
     if (!data) return;
     const reactions = data.reactions || {};
-    reactions[emoji] = (reactions[emoji] || 0) + 1;
+    if (reactions[emoji]) {
+      reactions[emoji]--;
+      if (reactions[emoji] === 0) delete reactions[emoji];
+    } else {
+      reactions[emoji] = 1;
+    }
     ref.update({ reactions });
   });
-}
-
-// Format reactions
-function formatReactions(reactions) {
-  return Object.entries(reactions || {})
-    .map(([emoji, count]) => `<span>${emoji} ${count}</span>`).join(" ");
-}
-
-// Delete message
-function deleteMessage(id) {
-  db.collection("messages").doc(id).delete();
 }
 
 // Edit message
@@ -132,4 +127,19 @@ function editMessage(id, button) {
     db.collection("messages").doc(id).update({ text: newText });
     span.contentEditable = false;
   };
+}
+
+// Delete message
+function deleteMessage(id) {
+  db.collection("messages").doc(id).delete();
+}
+
+// Go back to login screen
+function goBackToLogin() {
+  document.getElementById('chat').style.display = 'none';
+  document.getElementById('login').style.display = 'flex';
+  localStorage.removeItem('name');
+  localStorage.removeItem('color');
+  currentUser = '';
+  currentColor = 'blue';
 }
