@@ -11,34 +11,53 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentUser = "";
-let userColor = "azul"; // Valor por defecto
+let currentColor = "blue";  // Default color
 
+// Initialize user data from localStorage
+window.onload = () => {
+  const savedName = localStorage.getItem('name');
+  const savedColor = localStorage.getItem('color');
+  if (savedName && savedColor) {
+    currentUser = savedName;
+    currentColor = savedColor;
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('chat').style.display = 'flex';
+    document.body.style.backgroundColor = currentColor === "blue" ? "#cce5ff" : "#f8d7da";  // Set background color based on choice
+  }
+};
+
+// Set color profile
+function setColor(color) {
+  currentColor = color;
+  document.body.style.backgroundColor = color === "blue" ? "#cce5ff" : "#f8d7da";
+  localStorage.setItem('color', color);
+}
+
+// Start chat
 function startChat() {
   const name = document.getElementById('username').value.trim();
   if (!name) return alert("Escribe tu nombre para entrar");
-  
-  // Obtener el color seleccionado
-  userColor = document.querySelector('input[name="color"]:checked').value;
-  
   currentUser = name;
+  localStorage.setItem('name', name);  // Save name to localStorage
   document.getElementById('login').style.display = 'none';
   document.getElementById('chat').style.display = 'flex';
   listenMessages();
 }
 
+// Send message
 function sendMessage() {
   const text = document.getElementById('messageInput').value.trim();
   if (!text) return;
   db.collection("messages").add({
     text,
     user: currentUser,
-    color: userColor, // Almacenamos el color junto con el mensaje
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     reactions: {},
   });
   document.getElementById('messageInput').value = "";
 }
 
+// Listen for messages
 function listenMessages() {
   db.collection("messages").orderBy("createdAt")
     .onSnapshot(snapshot => {
@@ -46,10 +65,9 @@ function listenMessages() {
       container.innerHTML = "";
       snapshot.forEach(doc => {
         const msg = doc.data();
-        // Verificación para evitar errores
         if (!msg || !msg.text || !msg.user) return;
         const div = document.createElement("div");
-        div.className = `message ${msg.user === currentUser ? 'me' : 'you'} ${msg.color}`; // Añadimos la clase de color
+        div.className = `message ${msg.user === currentUser ? 'me' : 'you'}`;
         div.innerHTML = `
           <strong>${msg.user}:</strong> <span contenteditable="false">${msg.text}</span>
           <div class="reactions">${formatReactions(msg.reactions)}</div>
@@ -67,7 +85,12 @@ function listenMessages() {
     });
 }
 
+// Show reaction picker
+let reactionPickerVisible = false;
+
 function showReactionPicker(button, id) {
+  if (reactionPickerVisible) return;
+  reactionPickerVisible = true;
   let picker = document.getElementById("reaction-template").content.cloneNode(true);
   picker.querySelectorAll('span').forEach(span => {
     span.onclick = (e) => addReaction(e, span.textContent, id);
@@ -75,6 +98,7 @@ function showReactionPicker(button, id) {
   button.parentElement.appendChild(picker);
 }
 
+// Add reaction to message
 function addReaction(event, emoji, id) {
   event.stopPropagation();
   const ref = db.collection("messages").doc(id);
@@ -87,15 +111,18 @@ function addReaction(event, emoji, id) {
   });
 }
 
+// Format reactions
 function formatReactions(reactions) {
   return Object.entries(reactions || {})
     .map(([emoji, count]) => `<span>${emoji} ${count}</span>`).join(" ");
 }
 
+// Delete message
 function deleteMessage(id) {
   db.collection("messages").doc(id).delete();
 }
 
+// Edit message
 function editMessage(id, button) {
   const span = button.parentElement.parentElement.querySelector('span');
   span.contentEditable = true;
