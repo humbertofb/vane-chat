@@ -1,8 +1,4 @@
-// Inicializa Firebase
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
-
-// Firebase config
+// Inicializa Firebase con la configuración
 const firebaseConfig = {
   apiKey: "AIzaSyBtf--tWrqRVItAGJGQ6hEk81iggP4I-SU",
   authDomain: "my-humber-project-319815.firebaseapp.com",
@@ -12,8 +8,9 @@ const firebaseConfig = {
   appId: "1:110994378936:web:60b20c16ce5f40b47e644d",
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Inicializa Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(app);
 
 // Elementos del DOM
 const messageInput = document.getElementById("message");
@@ -25,9 +22,9 @@ sendButton.addEventListener("click", async () => {
   const message = messageInput.value;
   if (message) {
     try {
-      await addDoc(collection(db, "messages"), {
+      await firebase.firestore().collection("messages").add({
         message,
-        timestamp: serverTimestamp(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       });
       messageInput.value = "";
     } catch (e) {
@@ -37,8 +34,8 @@ sendButton.addEventListener("click", async () => {
 });
 
 // Escuchar nuevos mensajes
-const q = query(collection(db, "messages"), orderBy("timestamp"));
-onSnapshot(q, (snapshot) => {
+const q = firebase.firestore().collection("messages").orderBy("timestamp");
+q.onSnapshot((snapshot) => {
   messagesContainer.innerHTML = "";
   snapshot.docs.forEach((doc) => {
     const msgData = doc.data();
